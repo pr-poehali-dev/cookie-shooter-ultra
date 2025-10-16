@@ -1,4 +1,10 @@
-@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap");
+@font-face {
+  font-family: "VCR OSD Mono";
+  src: url("https://fonts.cdnfonts.com/s/14985/VCR_OSD_MONO_1.001.woff")
+    format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
 
 @tailwind base;
 @tailwind components;
@@ -99,21 +105,17 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: "Fredoka", sans-serif;
+    font-family: "VCR OSD Mono", monospace;
   }
 }
 
 @layer utilities {
   .rainbow-gradient {
-    background: linear-gradient(
-      135deg,
-      #ff6b9d 0%,
-      #ffd93d 20%,
-      #6bcb77 40%,
-      #4d96ff 60%,
-      #a496ff 80%,
-      #ff6b9d 100%
-    );
+    background: linear-gradient(135deg, #dc2626 0%, #1f2937 50%, #dc2626 100%);
+  }
+
+  .red-black-gradient {
+    background: linear-gradient(135deg, #ef4444 0%, #7f1d1d 50%, #1f2937 100%);
   }
 
   .cookie-shadow {

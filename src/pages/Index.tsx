@@ -188,7 +188,7 @@ const Index = () => {
             <div className="space-y-4">
               <Button 
                 onClick={() => selectedCharacter ? startGame() : setScreen('characters')}
-                className="w-full h-16 text-2xl font-bold rainbow-gradient hover:opacity-90 cookie-shadow"
+                className="w-full h-16 text-2xl font-bold rainbow-gradient hover:opacity-90 cookie-shadow text-white"
               >
                 <Icon name="Play" className="mr-2" size={32} />
                 {selectedCharacter ? 'СТАРТ!' : 'ВЫБРАТЬ ГЕРОЯ'}
@@ -196,7 +196,7 @@ const Index = () => {
 
               <Button 
                 onClick={() => setScreen('characters')}
-                className="w-full h-14 text-xl font-semibold bg-game-yellow hover:bg-game-yellow/90 text-gray-900 cookie-shadow"
+                className="w-full h-14 text-xl font-semibold bg-game-lightred hover:bg-game-red text-white cookie-shadow border-2 border-game-black"
               >
                 <Icon name="Users" className="mr-2" size={24} />
                 ПЕРСОНАЖИ
@@ -204,7 +204,7 @@ const Index = () => {
 
               <Button 
                 onClick={() => setScreen('shop')}
-                className="w-full h-14 text-xl font-semibold bg-game-green hover:bg-game-green/90 text-white cookie-shadow"
+                className="w-full h-14 text-xl font-semibold bg-game-black hover:bg-gray-700 text-game-lightred cookie-shadow border-2 border-game-red"
               >
                 <Icon name="ShoppingCart" className="mr-2" size={24} />
                 МАГАЗИН
@@ -212,7 +212,7 @@ const Index = () => {
 
               <Button 
                 onClick={() => setScreen('leaderboard')}
-                className="w-full h-14 text-xl font-semibold bg-game-purple hover:bg-game-purple/90 text-white cookie-shadow"
+                className="w-full h-14 text-xl font-semibold red-black-gradient hover:opacity-90 text-white cookie-shadow"
               >
                 <Icon name="Trophy" className="mr-2" size={24} />
                 РЕКОРДЫ
@@ -250,8 +250,8 @@ const Index = () => {
                   key={char.id}
                   className={`p-6 cursor-pointer transition-all hover:scale-105 ${
                     selectedCharacter?.id === char.id 
-                      ? 'ring-4 ring-game-pink cookie-shadow' 
-                      : 'hover:ring-2 ring-game-blue'
+                      ? 'ring-4 ring-game-red cookie-shadow' 
+                      : 'hover:ring-2 ring-game-lightred'
                   } ${!char.unlocked ? 'opacity-50' : ''}`}
                   onClick={() => selectCharacter(char)}
                 >
@@ -283,7 +283,7 @@ const Index = () => {
             {selectedCharacter && (
               <Button 
                 onClick={startGame}
-                className="w-full mt-6 h-16 text-2xl font-bold rainbow-gradient hover:opacity-90 cookie-shadow"
+                className="w-full mt-6 h-16 text-2xl font-bold rainbow-gradient hover:opacity-90 cookie-shadow text-white"
               >
                 НАЧАТЬ ИГРУ!
               </Button>
@@ -360,7 +360,7 @@ const Index = () => {
               <Button 
                 onClick={shoot}
                 size="lg"
-                className="h-20 w-20 rounded-full rainbow-gradient hover:opacity-90 cookie-shadow"
+                className="h-20 w-20 rounded-full rainbow-gradient hover:opacity-90 cookie-shadow text-white"
               >
                 <Icon name="Zap" size={40} />
               </Button>
@@ -393,7 +393,7 @@ const Index = () => {
                   key={weapon.id}
                   className={`p-6 ${
                     currentWeapon?.id === weapon.id 
-                      ? 'ring-4 ring-game-pink cookie-shadow' 
+                      ? 'ring-4 ring-game-red cookie-shadow' 
                       : ''
                   }`}
                 >
@@ -407,7 +407,7 @@ const Index = () => {
                     {weapon.owned ? (
                       <Button 
                         onClick={() => setCurrentWeapon(weapon)}
-                        className="w-full bg-game-green hover:bg-game-green/90"
+                        className="w-full bg-game-lightred hover:bg-game-red text-white border-2 border-game-black"
                         disabled={currentWeapon?.id === weapon.id}
                       >
                         {currentWeapon?.id === weapon.id ? '✓ Выбрано' : 'Выбрать'}
@@ -415,7 +415,7 @@ const Index = () => {
                     ) : (
                       <Button 
                         onClick={() => buyWeapon(weapon)}
-                        className="w-full rainbow-gradient hover:opacity-90"
+                        className="w-full rainbow-gradient hover:opacity-90 text-white"
                         disabled={coins < weapon.price}
                       >
                         Купить за 💰 {weapon.price}
@@ -441,7 +441,7 @@ const Index = () => {
             </div>
 
             <div className="space-y-4">
-              <Card className="p-6 rainbow-gradient">
+              <Card className="p-6 red-black-gradient">
                 <div className="flex items-center justify-between text-white">
                   <div className="flex items-center gap-4">
                     <div className="text-4xl">🥇</div>
