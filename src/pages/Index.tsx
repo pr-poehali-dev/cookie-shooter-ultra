@@ -38,6 +38,7 @@ interface Bullet {
   id: number;
   x: number;
   y: number;
+  weaponId: number;
 }
 
 const Index = () => {
@@ -47,6 +48,9 @@ const Index = () => {
   const [coins, setCoins] = useState(500);
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
+  const [stylePoints, setStylePoints] = useState(0);
+  const [lastWeaponUsed, setLastWeaponUsed] = useState<number | null>(null);
+  const [killStreak, setKillStreak] = useState(0);
   
   const [isPlaying, setIsPlaying] = useState(false);
   const [playerY, setPlayerY] = useState(50);
@@ -106,16 +110,25 @@ const Index = () => {
 
       setEnemies(prev => {
         const updated = [...prev];
+        const weaponsUsed = new Set<number>();
+        
         bullets.forEach(bullet => {
           const hitEnemy = updated.find(e => 
             Math.abs(e.x - bullet.x) < 5 && 
             Math.abs(e.y - bullet.y) < 5
           );
           if (hitEnemy && currentWeapon) {
+            weaponsUsed.add(bullet.weaponId);
             hitEnemy.health -= currentWeapon.damage;
             if (hitEnemy.health <= 0) {
               setScore(s => s + 10);
-              setCoins(c => c + 5);
+              setKillStreak(k => k + 1);
+              
+              const varietyBonus = weaponsUsed.size > 1 ? 15 : 10;
+              const streakBonus = Math.floor(killStreak / 3) * 5;
+              const totalStyle = varietyBonus + streakBonus;
+              
+              setStylePoints(prev => prev + totalStyle);
             }
           }
         });
@@ -139,6 +152,9 @@ const Index = () => {
     setEnemies([]);
     setBullets([]);
     setPlayerY(50);
+    setStylePoints(0);
+    setKillStreak(0);
+    setLastWeaponUsed(null);
     setScreen('game');
   };
 
@@ -150,17 +166,27 @@ const Index = () => {
 
   const shoot = () => {
     if (!currentWeapon) return;
+    
+    let styleBonus = 1;
+    if (lastWeaponUsed && lastWeaponUsed !== currentWeapon.id) {
+      styleBonus = 2;
+      setStylePoints(prev => prev + 5);
+    }
+    setLastWeaponUsed(currentWeapon.id);
+    
     const newBullet: Bullet = {
       id: Date.now(),
       x: 15,
-      y: playerY
+      y: playerY,
+      weaponId: currentWeapon.id
     };
     setBullets(prev => [...prev, newBullet]);
+    setStylePoints(prev => prev + styleBonus);
   };
 
   const buyWeapon = (weapon: Weapon) => {
-    if (coins >= weapon.price && !weapon.owned) {
-      setCoins(coins - weapon.price);
+    if (stylePoints >= weapon.price && !weapon.owned) {
+      setStylePoints(stylePoints - weapon.price);
       setWeapons(weapons.map(w => 
         w.id === weapon.id ? { ...w, owned: true } : w
       ));
@@ -180,9 +206,9 @@ const Index = () => {
           <Card className="p-8 game-card bg-white/95 backdrop-blur cookie-shadow">
             <div className="text-center mb-8">
               <h1 className="text-6xl font-bold mb-4 text-transparent bg-clip-text rainbow-gradient animate-float">
-                COOKIE RUN SHOOTER
+                ULTRARUN
               </h1>
-              <p className="text-2xl text-gray-700">🍪 Стреляй и беги! 🎯</p>
+              <p className="text-2xl text-gray-700">🔫 STYLE. SPEED. DESTRUCTION. 🔥</p>
             </div>
 
             <div className="space-y-4">
@@ -221,8 +247,8 @@ const Index = () => {
 
             <div className="mt-8 flex justify-around text-center">
               <div>
-                <div className="text-3xl font-bold text-game-yellow">💰 {coins}</div>
-                <div className="text-sm text-gray-600">Монеты</div>
+                <div className="text-3xl font-bold text-game-red">🔥 {stylePoints}</div>
+                <div className="text-sm text-gray-600">Стиль</div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-game-pink">🏆 {highScore}</div>
@@ -296,7 +322,7 @@ const Index = () => {
         <div className="w-full max-w-6xl">
           <div className="bg-white/95 rounded-3xl p-4 mb-4 flex justify-between items-center cookie-shadow">
             <div className="flex gap-6">
-              <div className="text-xl font-bold">💰 {coins}</div>
+              <div className="text-xl font-bold">🔥 {stylePoints}</div>
               <div className="text-xl font-bold">⭐ {score}</div>
               <div className="text-xl font-bold">📏 {Math.floor(distance / 10)}m</div>
             </div>
@@ -379,7 +405,7 @@ const Index = () => {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-4xl font-bold text-gray-900">МАГАЗИН ОРУЖИЯ</h2>
-                <p className="text-xl text-gray-600 mt-2">💰 У тебя: {coins} монет</p>
+                <p className="text-xl text-gray-600 mt-2">🔥 У тебя: {stylePoints} стиля</p>
               </div>
               <Button onClick={() => setScreen('menu')} variant="outline" size="lg">
                 <Icon name="ArrowLeft" className="mr-2" />
@@ -416,9 +442,9 @@ const Index = () => {
                       <Button 
                         onClick={() => buyWeapon(weapon)}
                         className="w-full rainbow-gradient hover:opacity-90 text-white"
-                        disabled={coins < weapon.price}
+                        disabled={stylePoints < weapon.price}
                       >
-                        Купить за 💰 {weapon.price}
+                        Купить за 🔥 {weapon.price}
                       </Button>
                     )}
                   </div>
