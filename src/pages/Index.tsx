@@ -9,7 +9,7 @@ type GameScreen = 'menu' | 'characters' | 'game' | 'shop' | 'leaderboard';
 interface Character {
   id: number;
   name: string;
-  emoji: string;
+  image: string;
   speed: number;
   power: number;
   health: number;
@@ -51,6 +51,9 @@ const Index = () => {
   const [stylePoints, setStylePoints] = useState(0);
   const [lastWeaponUsed, setLastWeaponUsed] = useState<number | null>(null);
   const [killStreak, setKillStreak] = useState(0);
+  const [comboTimer, setComboTimer] = useState(0);
+  const [comboRank, setComboRank] = useState('');
+  const [playerX, setPlayerX] = useState(10);
   
   const [isPlaying, setIsPlaying] = useState(false);
   const [playerY, setPlayerY] = useState(50);
@@ -60,10 +63,10 @@ const Index = () => {
   const gameLoopRef = useRef<number>();
 
   const characters: Character[] = [
-    { id: 1, name: 'Cookie Hero', emoji: '🍪', speed: 5, power: 3, health: 100, unlocked: true },
-    { id: 2, name: 'Donut Warrior', emoji: '🍩', speed: 4, power: 5, health: 120, unlocked: true },
-    { id: 3, name: 'Cake Master', emoji: '🍰', speed: 6, power: 4, health: 90, unlocked: false },
-    { id: 4, name: 'Candy Knight', emoji: '🍬', speed: 5, power: 6, health: 110, unlocked: false },
+    { id: 1, name: 'V1 Machine', image: 'https://cdn.poehali.dev/projects/5fcf8f3f-b77e-4b1f-ba3e-55f65eb3f892/files/26e61209-44a9-4828-b74a-2646b11d94d6.jpg', speed: 5, power: 3, health: 100, unlocked: true },
+    { id: 2, name: 'Heavy Assault', image: 'https://cdn.poehali.dev/projects/5fcf8f3f-b77e-4b1f-ba3e-55f65eb3f892/files/1a5161e2-ff13-4d6d-9d7c-104ccbe49e10.jpg', speed: 4, power: 5, health: 120, unlocked: true },
+    { id: 3, name: 'Speed Demon', image: 'https://cdn.poehali.dev/projects/5fcf8f3f-b77e-4b1f-ba3e-55f65eb3f892/files/26e61209-44a9-4828-b74a-2646b11d94d6.jpg', speed: 6, power: 4, health: 90, unlocked: false },
+    { id: 4, name: 'Tank Bot', image: 'https://cdn.poehali.dev/projects/5fcf8f3f-b77e-4b1f-ba3e-55f65eb3f892/files/1a5161e2-ff13-4d6d-9d7c-104ccbe49e10.jpg', speed: 5, power: 6, health: 110, unlocked: false },
   ];
 
   const [weapons, setWeapons] = useState<Weapon[]>([
@@ -86,6 +89,16 @@ const Index = () => {
 
     const gameLoop = () => {
       setDistance(d => d + 1);
+      
+      setComboTimer(prev => {
+        const newTimer = prev - 0.016;
+        if (newTimer <= 0) {
+          setKillStreak(0);
+          setComboRank('');
+          return 0;
+        }
+        return newTimer;
+      });
       
       if (Math.random() < 0.02) {
         const newEnemy: Enemy = {
@@ -122,7 +135,21 @@ const Index = () => {
             hitEnemy.health -= currentWeapon.damage;
             if (hitEnemy.health <= 0) {
               setScore(s => s + 10);
-              setKillStreak(k => k + 1);
+              setKillStreak(k => {
+                const newStreak = k + 1;
+                
+                if (newStreak >= 20) setComboRank('ULTRAKILL');
+                else if (newStreak >= 15) setComboRank('SUPREME');
+                else if (newStreak >= 10) setComboRank('DESTRUCTIVE');
+                else if (newStreak >= 7) setComboRank('BRUTAL');
+                else if (newStreak >= 5) setComboRank('CARNAGE');
+                else if (newStreak >= 3) setComboRank('SAVAGE');
+                else setComboRank('');
+                
+                return newStreak;
+              });
+              
+              setComboTimer(3);
               
               const varietyBonus = weaponsUsed.size > 1 ? 15 : 10;
               const streakBonus = Math.floor(killStreak / 3) * 5;
@@ -152,8 +179,11 @@ const Index = () => {
     setEnemies([]);
     setBullets([]);
     setPlayerY(50);
+    setPlayerX(10);
     setStylePoints(0);
     setKillStreak(0);
+    setComboTimer(0);
+    setComboRank('');
     setLastWeaponUsed(null);
     setScreen('game');
   };
@@ -176,7 +206,7 @@ const Index = () => {
     
     const newBullet: Bullet = {
       id: Date.now(),
-      x: 15,
+      x: playerX + 5,
       y: playerY,
       weaponId: currentWeapon.id
     };
@@ -282,7 +312,7 @@ const Index = () => {
                   onClick={() => selectCharacter(char)}
                 >
                   <div className="text-center">
-                    <div className="text-6xl mb-3 animate-float">{char.emoji}</div>
+                    <img src={char.image} alt={char.name} className="w-32 h-32 mx-auto mb-3 object-contain animate-float" />
                     <h3 className="text-xl font-bold mb-3">{char.name}</h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
@@ -333,26 +363,44 @@ const Index = () => {
           </div>
 
           <div 
-            className="relative bg-gradient-to-r from-blue-200 via-green-200 to-yellow-200 rounded-3xl cookie-shadow overflow-hidden"
+            className="relative bg-gradient-to-r from-red-900 via-gray-900 to-black rounded-3xl cookie-shadow overflow-hidden"
             style={{ height: '600px' }}
+            onMouseMove={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const x = ((e.clientX - rect.left) / rect.width) * 100;
+              const y = ((e.clientY - rect.top) / rect.height) * 100;
+              setPlayerX(Math.max(5, Math.min(30, x)));
+              setPlayerY(Math.max(10, Math.min(90, y)));
+            }}
           >
-            <div 
-              className="absolute text-6xl transition-all duration-100"
+            {comboRank && (
+              <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-20">
+                <div className="text-6xl font-bold text-game-red animate-bounce-in" style={{ textShadow: '0 0 20px #DC2626, 0 0 40px #DC2626' }}>
+                  {comboRank}
+                </div>
+                <div className="text-3xl font-bold text-white text-center mt-2">
+                  {killStreak}x COMBO
+                </div>
+                <div className="w-64 h-2 bg-gray-800 rounded-full mt-2 overflow-hidden">
+                  <div 
+                    className="h-full bg-game-red transition-all duration-100"
+                    style={{ width: `${(comboTimer / 3) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            <img 
+              src={selectedCharacter?.image}
+              alt="player"
+              className="absolute w-24 h-24 object-contain transition-all duration-100"
               style={{ 
-                left: '10%', 
+                left: `${playerX}%`, 
                 top: `${playerY}%`,
-                transform: 'translate(-50%, -50%)'
+                transform: 'translate(-50%, -50%)',
+                filter: 'drop-shadow(0 0 10px rgba(239, 68, 68, 0.8))'
               }}
-              onMouseMove={(e) => {
-                const rect = e.currentTarget.parentElement?.getBoundingClientRect();
-                if (rect) {
-                  const y = ((e.clientY - rect.top) / rect.height) * 100;
-                  setPlayerY(Math.max(10, Math.min(90, y)));
-                }
-              }}
-            >
-              {selectedCharacter?.emoji}
-            </div>
+            />
 
             {bullets.map(bullet => (
               <div
@@ -382,7 +430,7 @@ const Index = () => {
               </div>
             ))}
 
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
               <Button 
                 onClick={shoot}
                 size="lg"
@@ -394,7 +442,7 @@ const Index = () => {
           </div>
 
           <div className="mt-4 text-center text-white text-lg font-bold bg-black/50 rounded-2xl p-3">
-            💡 Наведи мышь для движения • Жми кнопку для стрельбы
+            🎯 Двигай мышью для управления • ⚡ Жми кнопку для стрельбы • 🔄 Меняй оружие для бонуса
           </div>
         </div>
       )}
